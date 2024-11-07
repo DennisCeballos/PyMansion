@@ -4,23 +4,27 @@ import Utils
 # rect = [posX, posY, sizeX, sizeY]
 class Item:
     def __init__(self, nombre, accion, col_puntos = [],
-                 rect = [None], opacidad = 255, imagen = "error404.png", color = 'green') -> None:
+                 rect = [None], opacidad = 255, nombreImagen = None, escalaImagen = 1, color = None, tooltip = None) -> None:
         # Variables que se obtienen por argumentos
         self.nombre = nombre;
-        self.imagen = imagen;
+        
+        self.imagen = None
+        if (nombreImagen is not None):
+            self.imagen = Utils.get_imagen_cache(nombre_imagen=nombreImagen)
+            #self.imagen = pygame.transform.scale(self.imagen, (self.imagen.get_width() * escalaImagen, self.imagen.get_height()*escalaImagen))
+            self.imagen = pygame.transform.scale(self.imagen, list(map(lambda x: x*escalaImagen, (self.imagen.get_width(), self.imagen.get_height()))))
+        
         self.poligono = col_puntos;
         self.accion = accion;
         self.opacidad = opacidad;
-        self.color = color
+        
+        self.color = color if (color is not None) else 'green' # Setea el color a verde en caso no exista ningun color
 
-        # Variables generadas
-        # self.posX = posX;
-        # self.posY = posY;
-        # self.sizeX = sizeX;
-        # self.sizeY = sizeY;
         self.rect = None
         if rect[0] is not None:
             self.rect = pygame.Rect((rect[0], rect[1]), (rect[2], rect[3]))
+
+        self.tooltip = nombre if (tooltip is None) else tooltip
 
         # Variables necesarias para el funcionamiento
         self.visible = True;
@@ -77,6 +81,13 @@ class Item:
             # Sino, es porque existe valores del poligono y hay que dibujarlo
             pygame.draw.polygon(Utils.screen, self.color, self.poligono)
 
+        # Dibujar la imagen en pantalla, en caso no sea None
+        if self.imagen is not None:
+            if self.rect is not None:
+                Utils.screen.blit(self.imagen, self.rect)
+            else:
+                Utils.screen.blit(self.imagen, (self.poligono[0][0]+20, self.poligono[0][1]+20))
+
         if enable:
             self.check_click()
 
@@ -87,9 +98,10 @@ class Item:
         
         if self.point_in_polygon(mouse_pos): # Verifica que el mouse este dentro del area del objeto
             # Dibujar el tooltip
-            tooltip = Utils.tooltip_Font.render(self.nombre, False, (0,0,0) , (255,255,0))
-            tooltip.set_alpha(180)
-            Utils.screen.blit(tooltip, (mouse_pos[0]+16, mouse_pos[1]))
+            if self.tooltip is not None:
+                tooltip = Utils.tooltip_Font.render(self.tooltip, False, (0,0,0) , (255,255,0))
+                tooltip.set_alpha(180)
+                Utils.screen.blit(tooltip, (mouse_pos[0]+16, mouse_pos[1]))
 
             if left_click == 1 and self.clicked == False:
                 self.clicked = True

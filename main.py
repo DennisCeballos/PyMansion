@@ -1,10 +1,10 @@
 import pygame
 import sys
-from enum import Enum
 from Item import Item
 import Utils
-
-DEBUG = True
+from Habitacion import Habitacion
+from Examinable import Examinable, Tipo_Examinable
+import pygame_gui
 
 # Inicializar juego
 pygame.init()
@@ -12,24 +12,9 @@ pygame.init()
 timer = pygame.time.Clock()
 
 # Dimensiones de la pantalla
-ANCHO, ALTO = 900, 700
-Utils.screen = pygame.display.set_mode((ANCHO, ALTO))
+Utils.screen = pygame.display.set_mode((Utils.ANCHO, Utils.ALTO))
 pygame.display.set_caption('Pyjuego d\'Misterio')
 
-# Colores guardados globalmente
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-# Cargar imagenes
-cache_imagenes = {}
-# Recibe la direccion de la imagen
-def get_imagen_cache(nombre_imagen: str) -> pygame.image:
-    if not nombre_imagen in cache_imagenes:
-        try:
-            cache_imagenes[nombre_imagen] = pygame.image.load(nombre_imagen)
-        except Exception:
-            print("!!ERROR: no hay un archivo de imagen con ese nombre")
-    return cache_imagenes[nombre_imagen]
 
 # Fuentes
 Utils.font = pygame.font.Font(None, 36)
@@ -37,90 +22,13 @@ Utils.tooltip_Font = pygame.font.Font(None, 26)
 Utils.dialogue_Font = pygame.font.Font(None, 30)
 Utils.tittle_Font = pygame.font.Font(None, 35)
 
-# Clase para manejar los objetos
-
-
-# Clase para definir los UNICOS tipos de items examinalbes
-class Tipo_Examinable(Enum):
-    Nota = 0
-    Imagen = 1
-    Puzzle = 2
-
-#! Pueden existir (por ahora) solo tipos "Imagen", "Nota", "Puzzle"
-class Item_Examinable:
-    def __init__(self, nombre, tipo: Tipo_Examinable, imagen = "Imagenes/error404.png", texto = "No haz asignado ningun texto"):
-        self.nombre = nombre
-        self.tipo = tipo
-        self.imagen = imagen
-        self.texto = texto
-        self.activo = True
-        self.btn_regresar = Item("Regresar ...", rect= [ANCHO/2-200, ALTO-50, 400, 100], accion = self.cambiar_Activo, color=(40, 40, 40))
-        
-        if tipo == "Imagen":
-            # Logica para renderizar la imagen
-            self.imagen = get_imagen_cache(self.imagen)
-        
-        elif tipo == "Nota":
-            self.texto = Utils.tooltip_Font.render(texto, False, (0,0,0))
-        
-        elif tipo == "Puzzle":
-            pass
-    
-    # Funcion para la lambda
-    def cambiar_Activo(self):
-        self.activo = False
-
-    def draw(self):
-        self.activo = True #asumimos, por definicion, que si lo quisiste dibujar, es porque quieres activarlo
-
-        # Dibujar capa negra transparente encima
-        s = pygame.Surface((ANCHO, ALTO))
-        s.set_alpha(150)
-        s.fill((0, 0, 0))
-        Utils.screen.blit(s, (0,0))
-
-        # Dibujar el titulo de Arriba
-        txtSuperior = Utils.dialogue_Font.render("Examinando item: ", True, 'white')
-        Utils.screen.blit(txtSuperior, (20, 20))
-        
-        # Dibujar el titulo del objeto
-        txtNombreObjeto = Utils.tittle_Font.render(self.nombre, True, "white")
-        Utils.screen.blit(txtNombreObjeto, (ANCHO/2 - txtNombreObjeto.get_width()/2, 50))
-        
-
-        if self.tipo == "Nota":
-            text_rect = self.texto.get_rect(center=(ANCHO/2, 100))
-            Utils.screen.blit(self.texto, text_rect)
-
-        if self.tipo == "Imagen":
-            Utils.screen.blit(self.imagen, (ANCHO/2 - self.imagen.get_size()[0]/2, ALTO/2 - self.imagen.get_size()[1]/2))
-            pass
-
-        # Dibujar borde del boton inferior
-        #rectBorde = pygame.rect.Rect(ANCHO/2-175, ALTO-50, 350, 100)
-        #pygame.draw.rect(screen, 'gray', rectBorde, 0, 5)
-
-        # Dibujar boton inferior
-        self.btn_regresar.draw()
-
-# Clase para manejar los cuartos
-class Habitacion:
-    def __init__(self, nombre, imagen, items: Item) -> None:
-        self.nombre = nombre;
-        self.imagen = imagen;
-        self.items = items;
-        pass
-
-    def draw(self, enable = True):
-        Utils.screen.fill(WHITE);
-        for item in self.items:
-            item.draw(enable)
-        pass
+# Pygame_ui
+Utils.Manager_Ui = pygame_gui.UIManager((Utils.ANCHO, Utils.ALTO))
 
 
 # Definir los "game Objects" (objetos que aparecen en el juego)
 def Imprimir_Pantalla(texto):
-    if DEBUG: print("(En pantalla)" + texto)
+    if Utils.DEBUG: print("(En pantalla)" + texto)
     global hablando
     global text_actual
     text_actual = texto
@@ -128,16 +36,20 @@ def Imprimir_Pantalla(texto):
 
 
 def Mover_habitacion(nombreHabitacion):
+    global transicionando
     global habitacion_actual # Es necesario que sea global para que acceda a la variable del juego
+    
     cuartoObjetivo = habitacion_actual
-    if DEBUG: print("Moviendo a la habitacion " + nombreHabitacion)
+    if Utils.DEBUG: print("Accion: Moviendo a la habitacion " + nombreHabitacion)
+    
+    transicionando = True
 
     # Buscar entre todas las habitaciones
     for cuarto in habitaciones:
         if cuarto.nombre == nombreHabitacion:
             cuartoObjetivo = cuarto # Guardar la habitacion a la cual se va mover
 
-    if DEBUG and cuartoObjetivo == habitacion_actual: print("No se encontro una habitacion de nombre " + nombreHabitacion)
+    if Utils.DEBUG and cuartoObjetivo == habitacion_actual: print("Error_Accion: No se encontro una habitacion de nombre " + nombreHabitacion)
 
     habitacion_actual = cuartoObjetivo
 
@@ -147,10 +59,10 @@ def Examinar(x):
     global item_examinar
     global items_examinables
 
-    if DEBUG: print("Examinando..." + str(x))
+    if Utils.DEBUG: print("Examinando:" + str(x))
     
     # Generar un item examinable de error
-    item_examinar = Item_Examinable("Error",
+    item_examinar = Examinable("Error",
                     tipo="Nota",
                     texto="Estas mirando un error, no se encontro el nombre del item examinable"
                     ),
@@ -175,22 +87,22 @@ def Examinar(x):
 pintura_sala = Item("Pintura",
                     col_puntos = [[100,100], [100,200], [300,300], [200,100]],
                     accion = lambda x="Esta es una pintura": Imprimir_Pantalla(x),
-                    imagen = "Imagenes/object.png"
+                    nombreImagen = "object.png"
                     )
 
 
 puerta_Estudio = Item("Puerta Estudio",
-                      col_puntos= [ [ANCHO-200, ALTO-550], [ANCHO, ALTO-550], [ANCHO, ALTO], [ANCHO-200,ALTO] ],
+                      col_puntos= [ [Utils.ANCHO-200, Utils.ALTO-550], [Utils.ANCHO, Utils.ALTO-550], [Utils.ANCHO, Utils.ALTO], [Utils.ANCHO-200,Utils.ALTO] ],
                       accion = lambda x="Estudio": Mover_habitacion(x)
                       )
 
 laptop = Item("Laptop",
-              rect = [ ANCHO/2, ALTO/2, 120, 80],
+              rect = [ Utils.ANCHO/2, Utils.ALTO/2, 120, 80],
               accion = lambda x="Esta es una laptop muy antigua y que deberia de irse a la basura": Imprimir_Pantalla(x)
               )
 
 celular = Item("Celular",
-               col_puntos = [[ANCHO/2-200-20, ALTO/2-200-20], [ANCHO/2-200+20, ALTO/2-200-20], [ANCHO/2-200+20, ALTO/2-200+20], [ANCHO/2-200-20, ALTO/2-200+20]],
+               col_puntos = [[Utils.ANCHO/2-200-20, Utils.ALTO/2-200-20], [Utils.ANCHO/2-200+20, Utils.ALTO/2-200-20], [Utils.ANCHO/2-200+20, Utils.ALTO/2-200+20], [Utils.ANCHO/2-200-20, Utils.ALTO/2-200+20]],
                accion = lambda x="Un iphone": Imprimir_Pantalla(x))
 
 puerta_SalaPrincipal = Item("Puerta Sala Principal",
@@ -199,35 +111,46 @@ puerta_SalaPrincipal = Item("Puerta Sala Principal",
                             )
 
 notaPequena = Item("Notita",
-                   rect = [ ANCHO/2 - 30, ALTO/2-100, 100, 100 ],
+                   rect = [ Utils.ANCHO/2 - 30, Utils.ALTO/2-100, 100, 100 ],
                    accion = lambda x="Nota rara": Examinar(x)
                    )
+
+btnPrueba = Item("BtnPrueba",
+              rect = [ 0, 0, 50, 50],
+              accion = lambda x=1000, y = 800: fade(x, y)
+              )
 
 
 ## * DEFINICION DE ITEMS EXAMINABLES *
 items_examinables = [
-    Item_Examinable("Nota rara",
-                    tipo="Imagen",
+    Examinable("Nota rara",
+                    tipo="Puzzle",
                     texto="Estas mirando un objeto raro",
-                    imagen="Imagenes/error404.png",
+                    imagen="caja.png",
+                    escalaImagen = 0.4,
                     ),
 ]
 
 ## * DEFINICION DE HABITACIONES
 habitaciones = [
     Habitacion("Sala Principal",
-               "nada aun",
-               [pintura_sala, puerta_Estudio, celular, notaPequena]
-               ),
+               items = [pintura_sala, puerta_Estudio, celular, notaPequena, btnPrueba],
+               imagen= "Habitacion_Sala.jpg",
+               escalaImagen = 0.4
+               ),   
 
     Habitacion("Estudio",
-               "Nada aun",
-               [laptop, puerta_SalaPrincipal, notaPequena]
+               items = [laptop, puerta_SalaPrincipal, notaPequena],
+               imagen= "Habitacion_Estudio.jpg",
+               escalaImagen = 0.4
                ),
 
 ]
 
 ## * FIN DE MODIFICACIONES
+
+transicionando = False
+fade_counter = 0
 
 # Variables de uso durante el juego
 inventario = []  # Para almacenar objetos del inventario
@@ -244,6 +167,10 @@ text_speed = 2
 text_finalizado = False
 text_clicked = False
 
+linterna = Utils.get_imagen_cache("otro.png")
+linterna = pygame.transform.scale(linterna, list(map(lambda x: x*5, linterna.size)))
+
+
 def dibujar_texto():
     global text_counter
     global text_speed
@@ -252,7 +179,7 @@ def dibujar_texto():
     global text_clicked
     global hablando
 
-    fondo_texto = pygame.rect.Rect((0, ALTO-300), (ANCHO, 300))
+    fondo_texto = pygame.rect.Rect((0, Utils.ALTO-300), (Utils.ANCHO, 300))
     pygame.draw.rect( Utils.screen, 'black', fondo_texto )
     if text_counter < text_speed * len(text_actual):
         text_counter += 1
@@ -261,7 +188,7 @@ def dibujar_texto():
         # Resetear las variables
 
     snip = Utils.font.render(text_actual[0:text_counter // text_speed], True, 'white')
-    Utils.screen.blit(snip, (0+10, ALTO-300+10))
+    Utils.screen.blit(snip, (0+10, Utils.ALTO-300+10))
 
     mouse_pos = pygame.mouse.get_pos()
     left_click = pygame.mouse.get_pressed()[0]
@@ -279,21 +206,25 @@ def dibujar_texto():
         if left_click == 0:
             text_clicked = False
 
-
 # Main funcion que ejecuta el juego
 def main():
     global habitacion_actual
     global inspeccionando
+    global transicionando
     global item_examinar
+    global fade_counter
 
     # Main game loop
     running = True
     while running:
-        
+        UI_REFRESH_RATE = pygame.time.Clock().tick(60)/1000
         timer.tick(60)
+
+
         # Dibujar el cuarto actual
         # Si es que se esta analizando, el cuarto no deberia ser interactuable
-        habitacion_actual.draw(enable = not (inspeccionando or hablando)  )
+        if not transicionando:
+            habitacion_actual.draw(enable = not (inspeccionando or hablando or transicionando)  )
 
         if inspeccionando == True:
             # Se dibuja la interfaz del item examinandose
@@ -309,6 +240,31 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            Utils.Manager_Ui.process_events(event)
+
+        Utils.Manager_Ui.update(UI_REFRESH_RATE)
+
+        Utils.Manager_Ui.draw_ui(Utils.screen)
+
+        #! THIS WORKS AND ITS COOL, BUT MUST BE CHANGED
+        if transicionando:
+            if fade_counter < 255:
+                fade_counter += 25
+                fade = pygame.Surface((Utils.ANCHO, Utils.ALTO))
+                fade.fill((0,0,0))
+                fade.set_alpha(fade_counter)
+                Utils.screen.blit(fade, (0,0))
+            else:
+                transicionando = False
+                fade_counter = 0
+                
+
+        # Dibujar el efecto linterna
+        filter = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO))
+        filter.fill((50,50,50))
+        filter.blit(linterna, list(map(lambda x: x-linterna.size[0]/2, pygame.mouse.get_pos())))
+        Utils.screen.blit(filter, (0,0), special_flags=pygame.BLEND_RGB_SUB)
         
         # Actualizar el display del juego (???)
         pygame.display.flip()
