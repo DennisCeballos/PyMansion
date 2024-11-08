@@ -251,6 +251,10 @@ def main():
     global item_examinar
     global fade_counter
 
+    # Ocultar el puntero
+    if not Utils.DEBUG:
+        pygame.mouse.set_cursor( pygame.SYSTEM_CURSOR_CROSSHAIR )
+
     light_source = PulsatingLight(80, Utils.ALTO // 2 , 40)  # Light position and max radius
 
     global textoManager
@@ -261,7 +265,6 @@ def main():
     while running:
         UI_REFRESH_RATE = pygame.time.Clock().tick(60)/1000
         timer.tick(60)
-
 
         # Dibujar el cuarto actual
         # Si es que se esta analizando, el cuarto no deberia ser interactuable
@@ -300,18 +303,19 @@ def main():
             else:
                 transicionando = False
                 fade_counter = 0
-                
-
+        
+        
         # Dibujar el efecto linterna
-        '''
-        filter = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO))
-        filter.fill((50,50,50))
-        filter.blit(linterna, list(map(lambda x: x-linterna.size[0]/2, pygame.mouse.get_pos())))
-        Utils.screen.blit(filter, (0,0), special_flags=pygame.BLEND_RGB_SUB)
-        '''
-
-        # Jugando con fuego
         light_source.draw(Utils.screen)
+
+        # posicion del mouse
+        mouse_pos_screen = pygame.mouse.get_pos()
+        
+        # Dibujar el tooltip de posicion del mouse
+        if Utils.DEBUG and pygame.mouse.get_focused():
+            tooltip = Utils.tooltip_Font.render(str(mouse_pos_screen), False, (0,0,0) , (0,255,255))
+            tooltip.set_alpha(180)
+            Utils.screen.blit(tooltip, (mouse_pos_screen[0] - tooltip.size[0] - 10, mouse_pos_screen[1]+10 ))
 
         # Actualizar el display del juego (???)
         pygame.display.flip()

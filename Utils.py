@@ -1,7 +1,7 @@
 import pygame
 import pygame_gui
 
-DEBUG = True
+DEBUG = False
 
 ANCHO = 810
 ALTO = 810
@@ -9,10 +9,10 @@ ALTO = 810
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-font = None
-tooltip_Font = None
-dialogue_Font = None
-tittle_Font = None
+font: pygame.font.Font = None
+tooltip_Font: pygame.font.Font = None
+dialogue_Font: pygame.font.Font = None
+tittle_Font: pygame.font.Font = None
 
 screen: pygame.Surface = None
 Manager_Ui : pygame_gui.UIManager = None
