@@ -5,6 +5,8 @@ import Utils
 from Habitacion import Habitacion
 from Examinable import Examinable, Tipo_Examinable
 import pygame_gui
+import random
+import math
 
 # Inicializar juego
 pygame.init()
@@ -25,13 +27,13 @@ Utils.tittle_Font = pygame.font.Font(None, 35)
 # Pygame_ui
 Utils.Manager_Ui = pygame_gui.UIManager((Utils.ANCHO, Utils.ALTO))
 
-
+#* ACCIONES
+#*
 # Definir los "game Objects" (objetos que aparecen en el juego)
 def Imprimir_Pantalla(texto):
     if Utils.DEBUG: print("(En pantalla)" + texto)
     global hablando
-    global text_actual
-    text_actual = texto
+    textoManager.text_actual = texto
     hablando = True
 
 
@@ -115,11 +117,6 @@ notaPequena = Item("Notita",
                    accion = lambda x="Nota rara": Examinar(x)
                    )
 
-btnPrueba = Item("BtnPrueba",
-              rect = [ 0, 0, 50, 50],
-              accion = lambda x=1000, y = 800: fade(x, y)
-              )
-
 
 ## * DEFINICION DE ITEMS EXAMINABLES *
 items_examinables = [
@@ -134,7 +131,7 @@ items_examinables = [
 ## * DEFINICION DE HABITACIONES
 habitaciones = [
     Habitacion("Sala Principal",
-               items = [pintura_sala, puerta_Estudio, celular, notaPequena, btnPrueba],
+               items = [pintura_sala, puerta_Estudio, celular, notaPequena],
                imagen= "Habitacion_Sala.jpg",
                escalaImagen = 0.4
                ),   
@@ -144,7 +141,6 @@ habitaciones = [
                imagen= "Habitacion_Estudio.jpg",
                escalaImagen = 0.4
                ),
-
 ]
 
 ## * FIN DE MODIFICACIONES
@@ -161,50 +157,91 @@ item_examinar = False # debe cambiarse a un item
 
 hablando = False
 
-text_actual = ""
-text_counter = 0
-text_speed = 2
-text_finalizado = False
-text_clicked = False
+class TextoManager():
+    def __init__(self):
+        self.text_actual = ""
+        self.text_counter = 0
+        self.text_speed = 2
+        self.text_finalizado = False
+        self.text_clicked = False
+        pass
 
-linterna = Utils.get_imagen_cache("otro.png")
-linterna = pygame.transform.scale(linterna, list(map(lambda x: x*5, linterna.size)))
+    def draw(self):
+        global hablando
+
+        fondo_texto = pygame.rect.Rect((0, Utils.ALTO-300), (Utils.ANCHO, 300))
+        pygame.draw.rect( Utils.screen, 'black', fondo_texto )
+        
+        if self.text_counter < self.text_speed * len(self.text_actual):
+            self.text_counter += 1
+        elif ( self.text_counter >= self.text_speed * len(self.text_actual) ):
+            self.text_finalizado = True
+            # Resetear las variables
+
+        snip = Utils.font.render(self.text_actual[0:self.text_counter // self.text_speed], True, 'white')
+        Utils.screen.blit(snip, (0+10, Utils.ALTO-300+10))
+
+        mouse_pos = pygame.mouse.get_pos()
+        left_click = pygame.mouse.get_pressed()[0]
+        if fondo_texto.collidepoint(mouse_pos): # Verifica que el mouse este dentro del rango del objeto
+            # Si se hace click antes de qe termine, que se adelante el final
+            if left_click == 1 and self.text_clicked == False:
+                self.text_clicked = True
+                self.text_counter = self.text_speed * len(self.text_actual)
+                # Si ya termino, que se cierre la ventana
+                if self.text_finalizado:
+                    self.text_finalizado = False
+                    hablando = False
+                    self.text_counter = 0
+
+            if left_click == 0:
+                self.text_clicked = False
 
 
-def dibujar_texto():
-    global text_counter
-    global text_speed
-    global text_actual
-    global text_finalizado
-    global text_clicked
-    global hablando
 
-    fondo_texto = pygame.rect.Rect((0, Utils.ALTO-300), (Utils.ANCHO, 300))
-    pygame.draw.rect( Utils.screen, 'black', fondo_texto )
-    if text_counter < text_speed * len(text_actual):
-        text_counter += 1
-    elif ( text_counter >= text_speed * len(text_actual) ):
-        text_finalizado = True
-        # Resetear las variables
 
-    snip = Utils.font.render(text_actual[0:text_counter // text_speed], True, 'white')
-    Utils.screen.blit(snip, (0+10, Utils.ALTO-300+10))
+linterna = Utils.get_imagen_cache("flashlight.png")
+linterna = pygame.transform.scale(linterna, list(map(lambda x: x*1, linterna.size)))
 
-    mouse_pos = pygame.mouse.get_pos()
-    left_click = pygame.mouse.get_pressed()[0]
-    if fondo_texto.collidepoint(mouse_pos): # Verifica que el mouse este dentro del rango del objeto
-        # Si se hace click antes de qe termine, que se adelante el final
-        if left_click == 1 and text_clicked == False:
-            text_clicked = True
-            text_counter = text_speed * len(text_actual)
-            # Si ya termino, que se cierre la ventana
-            if text_finalizado:
-                text_finalizado = False
-                hablando = False
-                text_counter = 0
+# FireLight class
+class PulsatingLight:
+    def __init__(self, x, y, max_radius):
+        self.x = x
+        self.y = y
+        self.max_radius = max_radius
+        self.base_radius = max_radius * 0.9
+        self.pulse_speed = 0.003  # Speed of pulsation
+        self.time_offset = random.uniform(0, 2 * math.pi)  # Randomize phase for variation
 
-        if left_click == 0:
-            text_clicked = False
+    def draw(self, surface):
+        # Calculate pulsating radius
+        pulse = (math.sin(pygame.time.get_ticks() * self.pulse_speed + self.time_offset) + 1) / 2
+        current_radius = self.base_radius + pulse * (self.max_radius - self.base_radius)
+
+        # Draw multiple layers with increasing alpha closer to the center
+        num_layers = 2
+        for i in range(num_layers, 0, -1):
+            # Increase alpha for inner layers (closer to 255)
+            alpha = int(240 + 15 * (i / num_layers))
+            color = (*(0,0,0), alpha)  # Apply transparency
+            
+            # Inner layers have a higher radius ratio (sharper glow inside)
+            layer_radius = int(current_radius * (i / num_layers*2 + 0.2))
+
+            # Create a surface for each circle with transparency
+            circle_surf = pygame.Surface((layer_radius * 2, layer_radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(circle_surf, color, (layer_radius, layer_radius), layer_radius)
+
+            filter = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO))
+            filter.fill((50,50,50))
+            
+            filter.blit(linterna, list(map(lambda x: x-linterna.size[0]/2, pygame.mouse.get_pos())))
+            # Blit each layer at the light's position
+            filter.blit(circle_surf, (self.x - layer_radius, self.y - layer_radius))#, special_flags=pygame.BLEND_RGBA_SUB)
+            
+            Utils.screen.blit(filter, (0,0), special_flags=pygame.BLEND_RGB_SUB)
+
+
 
 # Main funcion que ejecuta el juego
 def main():
@@ -213,6 +250,11 @@ def main():
     global transicionando
     global item_examinar
     global fade_counter
+
+    light_source = PulsatingLight(80, Utils.ALTO // 2 , 40)  # Light position and max radius
+
+    global textoManager
+    textoManager = TextoManager()
 
     # Main game loop
     running = True
@@ -234,7 +276,7 @@ def main():
 
         if hablando == True:
             # Logica para generar texto en pantalla
-            dibujar_texto()
+            textoManager.draw()
 
         # Manejar los eventos del juego
         for event in pygame.event.get():
@@ -261,11 +303,16 @@ def main():
                 
 
         # Dibujar el efecto linterna
+        '''
         filter = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO))
         filter.fill((50,50,50))
         filter.blit(linterna, list(map(lambda x: x-linterna.size[0]/2, pygame.mouse.get_pos())))
         Utils.screen.blit(filter, (0,0), special_flags=pygame.BLEND_RGB_SUB)
-        
+        '''
+
+        # Jugando con fuego
+        light_source.draw(Utils.screen)
+
         # Actualizar el display del juego (???)
         pygame.display.flip()
 
