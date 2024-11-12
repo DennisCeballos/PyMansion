@@ -1,7 +1,7 @@
 import pygame
 import pygame_gui
 
-DEBUG = False
+DEBUG = True
 
 ANCHO = 810
 ALTO = 810

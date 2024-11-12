@@ -7,6 +7,8 @@ from Examinable import Examinable, Tipo_Examinable
 import pygame_gui
 import random
 import math
+from Light_Sources import *
+from TextManager import TextoManager
 
 # Inicializar juego
 pygame.init()
@@ -33,13 +35,15 @@ Utils.Manager_Ui = pygame_gui.UIManager((Utils.ANCHO, Utils.ALTO))
 def Imprimir_Pantalla(texto):
     if Utils.DEBUG: print("(En pantalla)" + texto)
     global hablando
-    textoManager.text_actual = texto
+    textoManager.lista_texto.append(texto)
+    textoManager.lista_texto.append("Lo lgramos")
     hablando = True
 
 
 def Mover_habitacion(nombreHabitacion):
     global transicionando
     global habitacion_actual # Es necesario que sea global para que acceda a la variable del juego
+    global lightManager
     
     cuartoObjetivo = habitacion_actual
     if Utils.DEBUG: print("Accion: Moviendo a la habitacion " + nombreHabitacion)
@@ -54,6 +58,7 @@ def Mover_habitacion(nombreHabitacion):
     if Utils.DEBUG and cuartoObjetivo == habitacion_actual: print("Error_Accion: No se encontro una habitacion de nombre " + nombreHabitacion)
 
     habitacion_actual = cuartoObjetivo
+    light_manager.lights = habitacion_actual.luces
 
 def Examinar(x):
     # Logica para examinar un objeto en pantalla
@@ -86,61 +91,86 @@ def Examinar(x):
 ### *** 
 
 ## * DEFINICION DE ITEMS
-pintura_sala = Item("Pintura",
-                    col_puntos = [[100,100], [100,200], [300,300], [200,100]],
-                    accion = lambda x="Esta es una pintura": Imprimir_Pantalla(x),
-                    nombreImagen = "object.png"
-                    )
+Puerta_InicioSala = Item( "Puerta_Inicio-Sala",
+    tooltip="",
+    accion = lambda x="Sala Principal": Mover_habitacion(x),
+    rect = [200,500, 400, 100],
+    color = (0, 0, 0),
+    )
 
-
-puerta_Estudio = Item("Puerta Estudio",
-                      col_puntos= [ [Utils.ANCHO-200, Utils.ALTO-550], [Utils.ANCHO, Utils.ALTO-550], [Utils.ANCHO, Utils.ALTO], [Utils.ANCHO-200,Utils.ALTO] ],
-                      accion = lambda x="Estudio": Mover_habitacion(x)
-                      )
-
-laptop = Item("Laptop",
-              rect = [ Utils.ANCHO/2, Utils.ALTO/2, 120, 80],
-              accion = lambda x="Esta es una laptop muy antigua y que deberia de irse a la basura": Imprimir_Pantalla(x)
-              )
-
-celular = Item("Celular",
-               col_puntos = [[Utils.ANCHO/2-200-20, Utils.ALTO/2-200-20], [Utils.ANCHO/2-200+20, Utils.ALTO/2-200-20], [Utils.ANCHO/2-200+20, Utils.ALTO/2-200+20], [Utils.ANCHO/2-200-20, Utils.ALTO/2-200+20]],
-               accion = lambda x="Un iphone": Imprimir_Pantalla(x))
-
-puerta_SalaPrincipal = Item("Puerta Sala Principal",
-                            rect = [200, 550, 200, 500,],
-                            accion = lambda x="Sala Principal": Mover_habitacion(x)
-                            )
-
-notaPequena = Item("Notita",
-                   rect = [ Utils.ANCHO/2 - 30, Utils.ALTO/2-100, 100, 100 ],
-                   accion = lambda x="Nota rara": Examinar(x)
-                   )
-
+Puerta_SalaEstudio = Item( "Puerta_Sala",
+                          tooltip = "Ir a Estudio",
+                          accion= lambda x="Estudio": Mover_habitacion(x),
+                          rect = [130, 400, 60, 50],
+                          nombreImagen = "Flecha_Izq.png",
+                          escalaImagen = 0.25,
+                          color = None,
+                          ) 
 
 ## * DEFINICION DE ITEMS EXAMINABLES *
 items_examinables = [
-    Examinable("Nota rara",
-                    tipo="Puzzle",
-                    texto="Estas mirando un objeto raro",
-                    imagen="caja.png",
-                    escalaImagen = 0.4,
-                    ),
+    
+
 ]
 
 ## * DEFINICION DE HABITACIONES
 habitaciones = [
+    Habitacion("Inicio",
+               items = [Puerta_InicioSala],
+               imagen = "nas",
+               escalaImagen = 1,
+               ),
+
     Habitacion("Sala Principal",
-               items = [pintura_sala, puerta_Estudio, celular, notaPequena],
+               items = [Puerta_SalaEstudio],
                imagen= "Habitacion_Sala.jpg",
-               escalaImagen = 0.4
-               ),   
+               escalaImagen = 0.4,
+               lista_luces = [ (80, 400), (685,415),  (600,420, 50), (385,185, 50), (385, 415, 50), (390, 490, 50), (635, 180, 50), (175,135, 50), (520,425, 30), (250, 420, 30)]
+            ),   
+    
+    Habitacion("Patio",
+               items=[],
+               imagen= "Habitacion_Patio.jpg",
+               escalaImagen=0.68,
+               lista_luces = [ (620, 565, 60), (255,530, 40), (555, 470, 20), (290, 480, 10)]
+            ),
 
     Habitacion("Estudio",
-               items = [laptop, puerta_SalaPrincipal, notaPequena],
-               imagen= "Habitacion_Estudio.jpg",
+               items = [],
+               imagen = "Habitacion_Estudio.jpg",
+               escalaImagen = 0.4,
+               lista_luces = []
+            ),
+
+    Habitacion("Habitacion",
+               items = [],
+               imagen= "Habitacion_Habitacion.jpg",
+               escalaImagen = 0.4,
+            ),
+
+    Habitacion("Atico",
+               items = [],
+               imagen= "Habitacion_Atico.jpg",
+               escalaImagen = 1.125,
+            ),
+    
+    Habitacion("Sotano_base",
+               items=[],
+               imagen = "Habitacion_Sotano-Bas.jpg",
                escalaImagen = 0.4
-               ),
+            ),
+
+    Habitacion("Sotano_Derecho",
+               items=[],
+               imagen = "Habitacion_Sotano-Der.jpg",
+               escalaImagen = 0.4
+            ),
+            
+    Habitacion("Sotano_Izquierdo",
+               items=[],
+               imagen = "Habitacion_Sotano-Izq.jpg",
+               escalaImagen = 0.4
+            ),
 ]
 
 ## * FIN DE MODIFICACIONES
@@ -148,100 +178,19 @@ habitaciones = [
 transicionando = False
 fade_counter = 0
 
-# Variables de uso durante el juego
-inventario = []  # Para almacenar objetos del inventario
-habitacion_actual = habitaciones[0]  # Habitacion de inicio
 
 inspeccionando = False
 item_examinar = False # debe cambiarse a un item
 
 hablando = False
 
-class TextoManager():
-    def __init__(self):
-        self.text_actual = ""
-        self.text_counter = 0
-        self.text_speed = 2
-        self.text_finalizado = False
-        self.text_clicked = False
-        pass
+textoManager = TextoManager()
+light_manager = LightManager()
 
-    def draw(self):
-        global hablando
-
-        fondo_texto = pygame.rect.Rect((0, Utils.ALTO-300), (Utils.ANCHO, 300))
-        pygame.draw.rect( Utils.screen, 'black', fondo_texto )
-        
-        if self.text_counter < self.text_speed * len(self.text_actual):
-            self.text_counter += 1
-        elif ( self.text_counter >= self.text_speed * len(self.text_actual) ):
-            self.text_finalizado = True
-            # Resetear las variables
-
-        snip = Utils.font.render(self.text_actual[0:self.text_counter // self.text_speed], True, 'white')
-        Utils.screen.blit(snip, (0+10, Utils.ALTO-300+10))
-
-        mouse_pos = pygame.mouse.get_pos()
-        left_click = pygame.mouse.get_pressed()[0]
-        if fondo_texto.collidepoint(mouse_pos): # Verifica que el mouse este dentro del rango del objeto
-            # Si se hace click antes de qe termine, que se adelante el final
-            if left_click == 1 and self.text_clicked == False:
-                self.text_clicked = True
-                self.text_counter = self.text_speed * len(self.text_actual)
-                # Si ya termino, que se cierre la ventana
-                if self.text_finalizado:
-                    self.text_finalizado = False
-                    hablando = False
-                    self.text_counter = 0
-
-            if left_click == 0:
-                self.text_clicked = False
-
-
-
-
-linterna = Utils.get_imagen_cache("flashlight.png")
-linterna = pygame.transform.scale(linterna, list(map(lambda x: x*1, linterna.size)))
-
-# FireLight class
-class PulsatingLight:
-    def __init__(self, x, y, max_radius):
-        self.x = x
-        self.y = y
-        self.max_radius = max_radius
-        self.base_radius = max_radius * 0.9
-        self.pulse_speed = 0.003  # Speed of pulsation
-        self.time_offset = random.uniform(0, 2 * math.pi)  # Randomize phase for variation
-
-    def draw(self, surface):
-        # Calculate pulsating radius
-        pulse = (math.sin(pygame.time.get_ticks() * self.pulse_speed + self.time_offset) + 1) / 2
-        current_radius = self.base_radius + pulse * (self.max_radius - self.base_radius)
-
-        # Draw multiple layers with increasing alpha closer to the center
-        num_layers = 2
-        for i in range(num_layers, 0, -1):
-            # Increase alpha for inner layers (closer to 255)
-            alpha = int(240 + 15 * (i / num_layers))
-            color = (*(0,0,0), alpha)  # Apply transparency
-            
-            # Inner layers have a higher radius ratio (sharper glow inside)
-            layer_radius = int(current_radius * (i / num_layers*2 + 0.2))
-
-            # Create a surface for each circle with transparency
-            circle_surf = pygame.Surface((layer_radius * 2, layer_radius * 2), pygame.SRCALPHA)
-            pygame.draw.circle(circle_surf, color, (layer_radius, layer_radius), layer_radius)
-
-            filter = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO))
-            filter.fill((50,50,50))
-            
-            filter.blit(linterna, list(map(lambda x: x-linterna.size[0]/2, pygame.mouse.get_pos())))
-            # Blit each layer at the light's position
-            filter.blit(circle_surf, (self.x - layer_radius, self.y - layer_radius))#, special_flags=pygame.BLEND_RGBA_SUB)
-            
-            Utils.screen.blit(filter, (0,0), special_flags=pygame.BLEND_RGB_SUB)
-
-
+# Variables de uso durante el juego
+inventario = []  # Para almacenar objetos del inventario
+habitacion_actual = habitaciones[0]  # Habitacion de inicio
+light_manager.lights = habitacion_actual.luces
 
 # Main funcion que ejecuta el juego
 def main():
@@ -250,15 +199,12 @@ def main():
     global transicionando
     global item_examinar
     global fade_counter
+    global light_manager
+    global textoManager
 
     # Ocultar el puntero
     if not Utils.DEBUG:
         pygame.mouse.set_cursor( pygame.SYSTEM_CURSOR_CROSSHAIR )
-
-    light_source = PulsatingLight(80, Utils.ALTO // 2 , 40)  # Light position and max radius
-
-    global textoManager
-    textoManager = TextoManager()
 
     # Main game loop
     running = True
@@ -266,10 +212,24 @@ def main():
         UI_REFRESH_RATE = pygame.time.Clock().tick(60)/1000
         timer.tick(60)
 
+        # Manejar los eventos del juego
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if Utils.DEBUG:
+                    print(f"Pos: {pygame.mouse.get_pos()}")
+
+            Utils.Manager_Ui.process_events(event)
+
+
         # Dibujar el cuarto actual
         # Si es que se esta analizando, el cuarto no deberia ser interactuable
         if not transicionando:
             habitacion_actual.draw(enable = not (inspeccionando or hablando or transicionando)  )
+            # Dibujar el efecto linterna y las luces
+            light_manager.draw()
 
         if inspeccionando == True:
             # Se dibuja la interfaz del item examinandose
@@ -280,13 +240,8 @@ def main():
         if hablando == True:
             # Logica para generar texto en pantalla
             textoManager.draw()
+            textoManager.update()
 
-        # Manejar los eventos del juego
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            Utils.Manager_Ui.process_events(event)
 
         Utils.Manager_Ui.update(UI_REFRESH_RATE)
 
@@ -303,10 +258,6 @@ def main():
             else:
                 transicionando = False
                 fade_counter = 0
-        
-        
-        # Dibujar el efecto linterna
-        light_source.draw(Utils.screen)
 
         # posicion del mouse
         mouse_pos_screen = pygame.mouse.get_pos()

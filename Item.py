@@ -18,7 +18,7 @@ class Item:
         self.accion = accion;
         self.opacidad = opacidad;
         
-        self.color = color if (color is not None) else 'green' # Setea el color a verde en caso no exista ningun color
+        self.color = color if (color is not None) else (127,255,0, 0) # Setea el color a verde en caso no exista ningun color
 
         self.rect = None
         if rect[0] is not None:
