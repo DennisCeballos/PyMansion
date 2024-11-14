@@ -30,14 +30,13 @@ Utils.Manager_Ui = pygame_gui.UIManager((Utils.ANCHO, Utils.ALTO))
 #* ACCIONES
 #*
 # Definir los "game Objects" (objetos que aparecen en el juego)
-def Imprimir_Pantalla(texto):
+def Accion_Imprimir_Pantalla(texto):
     if Utils.DEBUG: print("(En pantalla)" + texto)
     global hablando
     textoManager.lista_texto.append(texto)
     hablando = True
 
-
-def Mover_habitacion(nombreHabitacion):
+def Accion_Mover_habitacion(nombreHabitacion):
     global transicionando
     global habitacion_actual # Es necesario que sea global para que acceda a la variable del juego
     global lightManager
@@ -57,7 +56,7 @@ def Mover_habitacion(nombreHabitacion):
     habitacion_actual = cuartoObjetivo
     light_manager.lights = habitacion_actual.luces
 
-def Agregar_Item(item: Item, nombreHabitacion):
+def Accion_Agregar_Item(item: Item, nombreHabitacion):
     global habitacion_actual
 
     if type(Item) is not Item:
@@ -70,7 +69,7 @@ def Agregar_Item(item: Item, nombreHabitacion):
             return
         if Utils.DEBUG: print("Agregar_Item: No existe una habitacion con nombre ", nombreHabitacion)
 
-def Examinar(x):
+def Accion_Examinar(x):
     # Logica para examinar un objeto en pantalla
     global inspeccionando
     global item_examinar
@@ -103,13 +102,13 @@ def Examinar(x):
 ## * DEFINICION DE ITEMS
 Puerta_InicioSala = Item( "Puerta_Inicio-Sala",
     tooltip="Empezar",
-    accion = lambda x="Sala Principal": Mover_habitacion(x),
+    accion = lambda x="Sala Principal": Accion_Mover_habitacion(x),
     col_rect = [200,500, 400, 100],
     color = (0, 0, 0),
     )
 
 Puerta_SalaAtico = Item( "Ir Al aTiCo",
-    accion= lambda x = "Atico": Mover_habitacion(x),
+    accion= lambda x = "Atico": Accion_Mover_habitacion(x),
     col_rect = [190,100,55,60],
     nombreImagen = "Flecha_Ari.png",
     escalaImagen = 0.25,
@@ -117,7 +116,7 @@ Puerta_SalaAtico = Item( "Ir Al aTiCo",
     )
 
 Puerta_SalaEstudio = Item("Ir a Estudio",
-    accion= lambda x="Estudio": Mover_habitacion(x),
+    accion= lambda x="Estudio": Accion_Mover_habitacion(x),
     col_rect = [130, 400, 60, 55],
     nombreImagen = "Flecha_Izq.png",
     escalaImagen = 0.25,
@@ -125,7 +124,7 @@ Puerta_SalaEstudio = Item("Ir a Estudio",
     )
 
 Puerta_SalaPatio = Item("Ir a Patio",
-    accion= lambda x="Patio": Mover_habitacion(x),
+    accion= lambda x="Patio": Accion_Mover_habitacion(x),
     col_rect = [40, 570, 60, 55],
     nombreImagen = "Flecha_Izq.png",
     escalaImagen = 0.25,
@@ -133,7 +132,7 @@ Puerta_SalaPatio = Item("Ir a Patio",
     )
 
 Puerta_SalaBodega = Item("Ir a Bodega",
-    accion= lambda x="Sotano_base": Mover_habitacion(x),
+    accion= lambda x="Sotano_base": Accion_Mover_habitacion(x),
     col_rect = [700, 570, 60, 55],
     nombreImagen = "Flecha_Der.png",
     escalaImagen = 0.25,
@@ -141,7 +140,7 @@ Puerta_SalaBodega = Item("Ir a Bodega",
     )
 
 Puerta_SalaHabitacion = Item("Ir a Habitacion",
-    accion= lambda x="Habitacion": Mover_habitacion(x),
+    accion= lambda x="Habitacion": Accion_Mover_habitacion(x),
     col_rect = [610, 450, 60, 55],
     nombreImagen = "Flecha_Der.png",
     escalaImagen = 0.25,
@@ -149,7 +148,7 @@ Puerta_SalaHabitacion = Item("Ir a Habitacion",
     )
 
 Puerta_EstudioSala = Item("Ir a Sala Principal",
-    accion= lambda x="Sala Principal": Mover_habitacion(x),
+    accion= lambda x="Sala Principal": Accion_Mover_habitacion(x),
     col_rect = [100, 700, 55, 60],
     nombreImagen = "Flecha_Abj.png",
     escalaImagen = 0.25,
@@ -157,7 +156,7 @@ Puerta_EstudioSala = Item("Ir a Sala Principal",
     )
 
 Puerta_AbajoSala = Item("Ir a Sala Principal",
-    accion= lambda x="Sala Principal": Mover_habitacion(x),
+    accion= lambda x="Sala Principal": Accion_Mover_habitacion(x),
     col_rect = [400, 700, 55, 60],
     nombreImagen = "Flecha_Abj.png",
     escalaImagen = 0.25,
@@ -166,7 +165,7 @@ Puerta_AbajoSala = Item("Ir a Sala Principal",
 
 Flecha_BodegaDerecha = Item("Bodega derecha",
     tooltip="...",
-    accion= lambda x="Sotano_Derecho": Mover_habitacion(x),
+    accion= lambda x="Sotano_Derecho": Accion_Mover_habitacion(x),
     col_rect = [480, 410, 60, 55],
     nombreImagen = "Flecha_Der.png",
     escalaImagen = 0.25,
@@ -175,7 +174,7 @@ Flecha_BodegaDerecha = Item("Bodega derecha",
 
 Flecha_BodegaIzquierda = Item("Bodega Izquierda",
     tooltip = "...",
-    accion= lambda x="Sotano_Izquierdo": Mover_habitacion(x),
+    accion= lambda x="Sotano_Izquierdo": Accion_Mover_habitacion(x),
     col_rect = [210, 410, 60, 55],
     nombreImagen = "Flecha_Izq.png",
     escalaImagen = 0.25,
@@ -184,7 +183,7 @@ Flecha_BodegaIzquierda = Item("Bodega Izquierda",
 
 Flecha_BodegaAbajo = Item("Bodega Base", 
     tooltip = "Volver a bodega principal",
-    accion= lambda x="Sotano_base": Mover_habitacion(x),
+    accion= lambda x="Sotano_base": Accion_Mover_habitacion(x),
     col_rect = [400, 700, 55, 60],
     nombreImagen = "Flecha_Abj.png",
     escalaImagen = 0.25,
@@ -192,14 +191,14 @@ Flecha_BodegaAbajo = Item("Bodega Base",
     )
 
 CajaFuerte = Item("Caja de seguridad",
-    accion= lambda x="Caja seguridad": Examinar(x),
+    accion= lambda x="Caja seguridad": Accion_Examinar(x),
     col_rect=[580, 600, 112, 78],
     nombreImagen = "Caja_seguridad.png",
     escalaImagen = 0.75,
     color=None)
 
 FotoHabitacion = Item("Fotografia",
-    accion= lambda x="Es una foto del dueno de la mansion: alBerT CaMUs": Imprimir_Pantalla(x),
+    accion= lambda x="Es una foto del dueno de la mansion: alBerT CaMUs": Accion_Imprimir_Pantalla(x),
     col_rect=[225, 450, 40, 55],
     nombreImagen = None,
     color = None
@@ -210,8 +209,16 @@ items_examinables = [
     Examinable("Caja seguridad",
                Tipo_Examinable.Puzzle,
                texto="Ingresa la contrasena",
-               accion_puzzle=lambda x: Agregar_Item(Puerta_SalaAtico,"Sala Principal"),
-               puzzleAns="BTCMS" ),
+               accion_puzzle=lambda x: Accion_Agregar_Item(Puerta_SalaAtico,"Sala Principal"),
+               puzzleAns="BTCMS"
+               ),
+    
+    Examinable("RespuestaPergamino",
+               Tipo_Examinable.Imagen,
+               texto="...",
+               imagen = "Pergamino.png",
+               escalaImagen=0.1
+               )
 ]
 
 ## * DEFINICION DE HABITACIONES
@@ -295,7 +302,7 @@ inventarioManager = InventarioManager()
 
 # Variables de uso durante el juego
 inventario = []  # Para almacenar objetos del inventario
-habitacion_actual: Habitacion = habitaciones[5]  # Habitacion de inicio
+habitacion_actual: Habitacion = habitaciones[1]  # Habitacion de inicio
 light_manager.lights = habitacion_actual.luces
 
 # Main funcion que ejecuta el juego

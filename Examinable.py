@@ -53,8 +53,9 @@ class Examinable:
 
     # Funcion para la lambda
     def cambiar_Activo(self):
+        if self.tipo == Tipo_Examinable.Puzzle:
+            self.input_Texto.hide()
         self.activo = False
-        self.input_Texto.hide()
 
     def draw(self):
         self.activo = True #asumimos, por definicion, que si lo quisiste dibujar, es porque quieres activarlo
