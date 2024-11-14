@@ -3,26 +3,21 @@ import Utils
 
 # rect = [posX, posY, sizeX, sizeY]
 class Item:
-    def __init__(self, nombre, accion, col_puntos = [],
-                 rect = [None], opacidad = 255, nombreImagen = None, escalaImagen = 1, color = None, tooltip = None) -> None:
+    def __init__(self, nombre, accion,
+                 col_rect = [None], col_puntos = [None], nombreImagen = None, escalaImagen = 1,
+                 opacidad = 255, color = None, tooltip = None) -> None:
         # Variables que se obtienen por argumentos
-        self.nombre = nombre;
+        self.nombre = nombre
+        self.accion = accion
+        self.opacidad = opacidad
+        self.nombreImagen = nombreImagen
         
-        self.imagen = None
-        if (nombreImagen is not None):
-            self.imagen = Utils.get_imagen_cache(nombre_imagen=nombreImagen)
-            #self.imagen = pygame.transform.scale(self.imagen, (self.imagen.get_width() * escalaImagen, self.imagen.get_height()*escalaImagen))
-            self.imagen = pygame.transform.scale(self.imagen, list(map(lambda x: x*escalaImagen, (self.imagen.get_width(), self.imagen.get_height()))))
-        
-        self.poligono = col_puntos;
-        self.accion = accion;
-        self.opacidad = opacidad;
-        
-        self.color = color if (color is not None) else (127,255,0, 0) # Setea el color a verde en caso no exista ningun color
+        alpha = 255 if Utils.DEBUG else 0
+        self.color = (127,255,0, alpha) if (color is None) else color#, 0) # Setea el color a verde en caso no exista ningun color
 
         self.rect = None
-        if rect[0] is not None:
-            self.rect = pygame.Rect((rect[0], rect[1]), (rect[2], rect[3]))
+        if col_rect[0] is not None:
+            self.rect = pygame.Rect((col_rect[0], col_rect[1]), (col_rect[2], col_rect[3]))
 
         self.tooltip = nombre if (tooltip is None) else tooltip
 
@@ -30,6 +25,29 @@ class Item:
         self.visible = True;
         self.enable = True;
         self.clicked = False;
+
+        self.superficie_type = ""
+        self.superficie = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO), pygame.SRCALPHA)
+
+        # Si es que se ha dado la info para un rect
+        if col_rect[0] is not None:
+            pygame.draw.rect(self.superficie, color=self.color, rect=col_rect)
+            self.superficie_type = "rect"
+
+        # Si es que se ha dado la info para un polygono
+        if col_puntos[0] is not None:
+            pygame.draw.polygon(self.superficie, color=self.color, points=col_puntos)
+            self.superficie_type = "polygon"
+
+        # Si es que se ha dado la info de una imagen
+        if nombreImagen is not None:
+            self.imagen = Utils.get_imagen_cache(nombre_imagen=nombreImagen)
+            self.imagen = pygame.transform.scale(self.imagen, list(map(lambda x: x*escalaImagen, (self.imagen.get_width(), self.imagen.get_height()))))
+            if col_rect[0] is not None:
+                self.superficie.blit(self.imagen, (col_rect[0], col_rect[1]))
+            if col_puntos[0] is not None:
+                self.superficie.blit(self.imagen, col_puntos[0])
+
         pass
 
     # Funcion para verificar que un punto pertenece al interior del poligono
@@ -75,18 +93,7 @@ class Item:
     # Dibujar el item  en pantalla
     def draw(self, enable = True):
         # Si existe un rectangulo, que lo dibuje
-        if self.rect is not None:
-            pygame.draw.rect(Utils.screen, self.color, self.rect, 0, 5)
-        else:
-            # Sino, es porque existe valores del poligono y hay que dibujarlo
-            pygame.draw.polygon(Utils.screen, self.color, self.poligono)
-
-        # Dibujar la imagen en pantalla, en caso no sea None
-        if self.imagen is not None:
-            if self.rect is not None:
-                Utils.screen.blit(self.imagen, self.rect)
-            else:
-                Utils.screen.blit(self.imagen, (self.poligono[0][0]+20, self.poligono[0][1]+20))
+        Utils.screen.blit(self.superficie, self.superficie.get_rect())
 
         if enable:
             self.check_click()

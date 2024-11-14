@@ -9,6 +9,7 @@ import random
 import math
 from Light_Sources import *
 from TextManager import TextoManager
+from InventarioManager import InventarioManager
 
 # Inicializar juego
 pygame.init()
@@ -18,7 +19,6 @@ timer = pygame.time.Clock()
 # Dimensiones de la pantalla
 Utils.screen = pygame.display.set_mode((Utils.ANCHO, Utils.ALTO))
 pygame.display.set_caption('Pyjuego d\'Misterio')
-
 
 # Fuentes
 Utils.font = pygame.font.Font(None, 36)
@@ -36,7 +36,6 @@ def Imprimir_Pantalla(texto):
     if Utils.DEBUG: print("(En pantalla)" + texto)
     global hablando
     textoManager.lista_texto.append(texto)
-    textoManager.lista_texto.append("Lo lgramos")
     hablando = True
 
 
@@ -59,6 +58,19 @@ def Mover_habitacion(nombreHabitacion):
 
     habitacion_actual = cuartoObjetivo
     light_manager.lights = habitacion_actual.luces
+
+def Agregar_Item(item: Item, nombreHabitacion):
+    global habitacion_actual
+
+    if type(Item) is not Item:
+        print("Agregar_Item: No ingresaste una variable de tipo Item")
+        return
+    
+    for cuarto in habitaciones:
+        if cuarto.nombre == nombreHabitacion:
+            cuarto.items.append(item)
+            return
+        if Utils.DEBUG: print("Agregar_Item: No existe una habitacion con nombre ", nombreHabitacion)
 
 def Examinar(x):
     # Logica para examinar un objeto en pantalla
@@ -92,25 +104,116 @@ def Examinar(x):
 
 ## * DEFINICION DE ITEMS
 Puerta_InicioSala = Item( "Puerta_Inicio-Sala",
-    tooltip="",
+    tooltip="Empezar",
     accion = lambda x="Sala Principal": Mover_habitacion(x),
-    rect = [200,500, 400, 100],
+    col_rect = [200,500, 400, 100],
     color = (0, 0, 0),
     )
 
-Puerta_SalaEstudio = Item( "Puerta_Sala",
-                          tooltip = "Ir a Estudio",
-                          accion= lambda x="Estudio": Mover_habitacion(x),
-                          rect = [130, 400, 60, 50],
-                          nombreImagen = "Flecha_Izq.png",
-                          escalaImagen = 0.25,
-                          color = None,
-                          ) 
+Puerta_SalaAtico = Item( "Ir Al aTiCo",
+    accion= lambda x = "Atico": Mover_habitacion(x),
+    col_rect = [190,100,55,60],
+    nombreImagen = "Flecha_Ari.png",
+    escalaImagen = 0.25,
+    color = None
+    )
+
+Puerta_SalaEstudio = Item("Ir a Estudio",
+    accion= lambda x="Estudio": Mover_habitacion(x),
+    col_rect = [130, 400, 60, 55],
+    nombreImagen = "Flecha_Izq.png",
+    escalaImagen = 0.25,
+    color = None,
+    )
+
+Puerta_SalaPatio = Item("Ir a Patio",
+    accion= lambda x="Patio": Mover_habitacion(x),
+    col_rect = [40, 570, 60, 55],
+    nombreImagen = "Flecha_Izq.png",
+    escalaImagen = 0.25,
+    color = None,
+    )
+
+Puerta_SalaBodega = Item("Ir a Bodega",
+    accion= lambda x="Sotano_base": Mover_habitacion(x),
+    col_rect = [700, 570, 60, 55],
+    nombreImagen = "Flecha_Der.png",
+    escalaImagen = 0.25,
+    color = None,
+    )
+
+Puerta_SalaHabitacion = Item("Ir a Habitacion",
+    accion= lambda x="Habitacion": Mover_habitacion(x),
+    col_rect = [610, 450, 60, 55],
+    nombreImagen = "Flecha_Der.png",
+    escalaImagen = 0.25,
+    color = None,
+    )
+
+Puerta_EstudioSala = Item("Ir a Sala Principal",
+    accion= lambda x="Sala Principal": Mover_habitacion(x),
+    col_rect = [100, 700, 55, 60],
+    nombreImagen = "Flecha_Abj.png",
+    escalaImagen = 0.25,
+    color= None
+    )
+
+Puerta_AbajoSala = Item("Ir a Sala Principal",
+    accion= lambda x="Sala Principal": Mover_habitacion(x),
+    col_rect = [400, 700, 55, 60],
+    nombreImagen = "Flecha_Abj.png",
+    escalaImagen = 0.25,
+    color= None
+    )
+
+Flecha_BodegaDerecha = Item("Bodega derecha",
+    tooltip="...",
+    accion= lambda x="Sotano_Derecho": Mover_habitacion(x),
+    col_rect = [480, 410, 60, 55],
+    nombreImagen = "Flecha_Der.png",
+    escalaImagen = 0.25,
+    color = None,
+    )
+
+Flecha_BodegaIzquierda = Item("Bodega Izquierda",
+    tooltip = "...",
+    accion= lambda x="Sotano_Izquierdo": Mover_habitacion(x),
+    col_rect = [210, 410, 60, 55],
+    nombreImagen = "Flecha_Izq.png",
+    escalaImagen = 0.25,
+    color = None,
+    )
+
+Flecha_BodegaAbajo = Item("Bodega Base", 
+    tooltip = "Volver a bodega principal",
+    accion= lambda x="Sotano_base": Mover_habitacion(x),
+    col_rect = [400, 700, 55, 60],
+    nombreImagen = "Flecha_Abj.png",
+    escalaImagen = 0.25,
+    color= None
+    )
+
+CajaFuerte = Item("Caja de seguridad",
+    accion= lambda x="Caja seguridad": Examinar(x),
+    col_rect=[580, 600, 112, 78],
+    nombreImagen = "Caja_seguridad.png",
+    escalaImagen = 0.75,
+    color=None)
+
+FotoHabitacion = Item("Fotografia",
+    accion= lambda x="Es una foto del dueno de la mansion: alBerT CaMUs": Imprimir_Pantalla(x),
+    col_rect=[225, 450, 40, 55],
+    nombreImagen = None,
+    color = None
+    )
 
 ## * DEFINICION DE ITEMS EXAMINABLES *
 items_examinables = [
-    
-
+    Examinable("Caja seguridad",
+               Tipo_Examinable.Puzzle,
+               texto="Ingresa la contrasena",
+               accion_puzzle=lambda x: Agregar_Item(Puerta_SalaAtico,"Sala Principal"),
+               puzzleAns="BTCMS" ),
 ]
 
 ## * DEFINICION DE HABITACIONES
@@ -122,54 +225,58 @@ habitaciones = [
                ),
 
     Habitacion("Sala Principal",
-               items = [Puerta_SalaEstudio],
+               items = [Puerta_SalaEstudio, Puerta_SalaPatio, Puerta_SalaBodega, Puerta_SalaHabitacion],
                imagen= "Habitacion_Sala.jpg",
                escalaImagen = 0.4,
                lista_luces = [ (80, 400), (685,415),  (600,420, 50), (385,185, 50), (385, 415, 50), (390, 490, 50), (635, 180, 50), (175,135, 50), (520,425, 30), (250, 420, 30)]
             ),   
     
     Habitacion("Patio",
-               items=[],
-               imagen= "Habitacion_Patio.jpg",
+               items=[Puerta_AbajoSala],
+               imagen= "Habitacion_Patio_Closed.png",
                escalaImagen=0.68,
-               lista_luces = [ (620, 565, 60), (255,530, 40), (555, 470, 20), (290, 480, 10)]
+               lista_luces = [ (620, 565, 80), (255,530, 60), (555, 470, 40), (290, 480, 30)]
             ),
 
     Habitacion("Estudio",
-               items = [],
+               items = [Puerta_EstudioSala],
                imagen = "Habitacion_Estudio.jpg",
                escalaImagen = 0.4,
-               lista_luces = []
+               lista_luces = [ (155,375,140), (245,275,40) ]
             ),
 
     Habitacion("Habitacion",
-               items = [],
+               items = [Puerta_AbajoSala, CajaFuerte, FotoHabitacion],
                imagen= "Habitacion_Habitacion.jpg",
                escalaImagen = 0.4,
+               lista_luces = [ (235,265, 60), (700,400,160), (300,405,60), (75,485,70)]
             ),
 
     Habitacion("Atico",
-               items = [],
+               items = [Puerta_AbajoSala],
                imagen= "Habitacion_Atico.jpg",
                escalaImagen = 1.125,
             ),
     
     Habitacion("Sotano_base",
-               items=[],
+               items=[Puerta_AbajoSala, Flecha_BodegaDerecha, Flecha_BodegaIzquierda],
                imagen = "Habitacion_Sotano-Bas.jpg",
-               escalaImagen = 0.4
+               escalaImagen = 0.4,
+               lista_luces = [ (85,315,160), (630,375), (380,425,50), (250,525), (605,655) ]
             ),
 
     Habitacion("Sotano_Derecho",
-               items=[],
+               items=[Flecha_BodegaAbajo],
                imagen = "Habitacion_Sotano-Der.jpg",
-               escalaImagen = 0.4
+               escalaImagen = 0.4,
+               lista_luces = [ (75,565,110), (120,365,120), (760,410,120), (350,350,120) ]
             ),
             
     Habitacion("Sotano_Izquierdo",
-               items=[],
+               items=[Flecha_BodegaAbajo],
                imagen = "Habitacion_Sotano-Izq.jpg",
-               escalaImagen = 0.4
+               escalaImagen = 0.4,
+               lista_luces = [ (40,210,50), (60,360,50), (725,240,50), (485,360,120)]
             ),
 ]
 
@@ -186,10 +293,11 @@ hablando = False
 
 textoManager = TextoManager()
 light_manager = LightManager()
+inventarioManager = InventarioManager()
 
 # Variables de uso durante el juego
 inventario = []  # Para almacenar objetos del inventario
-habitacion_actual = habitaciones[0]  # Habitacion de inicio
+habitacion_actual: Habitacion = habitaciones[5]  # Habitacion de inicio
 light_manager.lights = habitacion_actual.luces
 
 # Main funcion que ejecuta el juego
@@ -201,6 +309,9 @@ def main():
     global fade_counter
     global light_manager
     global textoManager
+    global hablando
+
+    inventarioManager.agregarItem(Puerta_AbajoSala)
 
     # Ocultar el puntero
     if not Utils.DEBUG:
@@ -224,12 +335,15 @@ def main():
             Utils.Manager_Ui.process_events(event)
 
 
-        # Dibujar el cuarto actual
         # Si es que se esta analizando, el cuarto no deberia ser interactuable
         if not transicionando:
+            # Dibujar el cuarto actual
             habitacion_actual.draw(enable = not (inspeccionando or hablando or transicionando)  )
             # Dibujar el efecto linterna y las luces
             light_manager.draw()
+            # Dibujar el inventario
+            inventarioManager.draw()
+            inventarioManager.update()
 
         if inspeccionando == True:
             # Se dibuja la interfaz del item examinandose
@@ -240,7 +354,7 @@ def main():
         if hablando == True:
             # Logica para generar texto en pantalla
             textoManager.draw()
-            textoManager.update()
+            hablando = textoManager.update()
 
 
         Utils.Manager_Ui.update(UI_REFRESH_RATE)
@@ -258,6 +372,7 @@ def main():
             else:
                 transicionando = False
                 fade_counter = 0
+
 
         # posicion del mouse
         mouse_pos_screen = pygame.mouse.get_pos()

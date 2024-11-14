@@ -18,7 +18,7 @@ class TextoManager():
 
     def draw(self):
         pygame.draw.rect( Utils.screen, 'black', self.fondo_texto )
-        
+
         if self.text_counter < self.text_speed * len( self.lista_texto[self.text_actual] ):
             self.text_counter += 1
         elif ( self.text_counter >= self.text_speed * len( self.lista_texto[self.text_actual] ) ):
@@ -27,8 +27,7 @@ class TextoManager():
 
     
     def update(self):
-        global hablando
-
+        hablando = True
         snip = Utils.font.render( str(self.lista_texto[self.text_actual])[0:self.text_counter // self.text_speed], True, 'white')
         Utils.screen.blit(snip, (0+10, Utils.ALTO-300+10))
 
@@ -44,18 +43,21 @@ class TextoManager():
                     self.text_finalizado = False
                     
                     # Si ya se recorrieron todos los elementos de la lista
-                    if len(self.lista_texto)-1 == self.text_actual:
+                    if len(self.lista_texto) == self.text_actual+1:
                         # Salir de la animacion de texto
-                        print("Se acabo")
-                        hablando = False
+                        # , reiniciar las variables
                         self.text_counter = 0
                         self.text_actual = 0
                         self.lista_texto = []
+                        hablando = False
                     else:
+                        print(f"Se hace una suma de {self.text_actual}")
                         # Repetir el bucle con un nuevo texto
                         self.text_actual = self.text_actual + 1
                         self.text_counter = 0
 
             if left_click == 0:
                 self.text_clicked = False
+
+        return hablando
 

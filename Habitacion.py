@@ -14,7 +14,7 @@ class Habitacion:
         
         self.luces = []
         for source in lista_luces:
-            if len(source) < 2:
+            if len(source) > 2:
                 self.luces.append(LightSource(source[0], source[1], source[2]))
             else:
                 self.luces.append(LightSource(source[0], source[1]))

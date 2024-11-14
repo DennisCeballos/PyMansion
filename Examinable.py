@@ -19,24 +19,24 @@ class Examinable:
         self.imagen = imagen
         self.texto = texto
         self.activo = True
-        self.btn_regresar = Item("Regresar ...", rect= [Utils.ANCHO/2-200, Utils.ALTO-50, 400, 100], accion = self.cambiar_Activo, color=(40, 40, 40))
+        self.btn_regresar = Item("Regresar ...", col_rect= [Utils.ANCHO/2-200, Utils.ALTO-50, 400, 100], accion = self.cambiar_Activo, color=(40, 40, 40))
         
-        if tipo == "Imagen":
+        if tipo == Tipo_Examinable.Imagen:
             # Logica para renderizar la imagen
             self.imagen = Utils.get_imagen_cache(self.imagen)
             self.imagen = pygame.transform.scale(self.imagen, (self.imagen.get_width() * escalaImagen, self.imagen.get_height()*escalaImagen))
         
-        elif tipo == "Nota":
+        elif tipo == Tipo_Examinable.Nota:
             self.texto = Utils.tooltip_Font.render(texto, False, (0,0,0))
         
-        elif tipo == "Puzzle":
+        elif tipo == Tipo_Examinable.Puzzle:
             # Generar la entrada de texto
             self.input_Texto = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((Utils.ANCHO/2 - 100, Utils.ALTO/2 - 50), (200, 100)), manager=Utils.Manager_Ui, object_id="#input_Puzzle")
             self.input_Texto.hide()
 
             # Generar Los botones de submit y limpiar
-            self.btn_submit = Item("Submit", rect = [Utils.ANCHO/2 + 100, Utils.ALTO/2-50, 100, 100], accion = self.submit_puzzle, color=(255, 255, 255), tooltip="")
-            self.btn_limpiar = Item("LimpiarInput", rect = [Utils.ANCHO/2 + 200, Utils.ALTO/2-50, 100, 100], accion = self.limpiar_input, color=(200, 200, 200), tooltip="")
+            self.btn_submit = Item("Submit", col_rect = [Utils.ANCHO/2 + 100, Utils.ALTO/2-50, 100, 100], accion = self.submit_puzzle, color=(255, 255, 255), tooltip="")
+            self.btn_limpiar = Item("LimpiarInput", col_rect = [Utils.ANCHO/2 + 200, Utils.ALTO/2-50, 100, 100], accion = self.limpiar_input, color=(200, 200, 200), tooltip="")
 
             self.accion_puzzle = accion_puzzle
             self.puzzleAnswer = puzzleAns
@@ -74,16 +74,16 @@ class Examinable:
         Utils.screen.blit(txtNombreObjeto, (Utils.ANCHO/2 - txtNombreObjeto.get_width()/2, 50))
         
 
-        if self.tipo == "Nota":
+        if self.tipo == Tipo_Examinable.Nota:
             text_rect = self.texto.get_rect(center=(Utils.ANCHO/2, 100))
             Utils.screen.blit(self.texto, text_rect)
 
 
-        if self.tipo == "Imagen":
+        if self.tipo == Tipo_Examinable.Imagen:
             Utils.screen.blit(self.imagen, (Utils.ANCHO/2 - self.imagen.get_size()[0]/2, Utils.ALTO/2 - self.imagen.get_size()[1]/2))
             pass
 
-        if self.tipo == "Puzzle":
+        if self.tipo == Tipo_Examinable.Puzzle:
             self.btn_submit.draw()
             self.btn_limpiar.draw()
             self.input_Texto.show()
