@@ -5,8 +5,6 @@ import Utils
 from Habitacion import Habitacion
 from Examinable import Examinable, Tipo_Examinable
 import pygame_gui
-import random
-import math
 from Light_Sources import *
 from TextManager import TextoManager
 from InventarioManager import InventarioManager
