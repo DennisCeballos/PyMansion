@@ -4,7 +4,7 @@ import Utils
 # rect = [posX, posY, sizeX, sizeY]
 class Item:
     def __init__(self, nombre, accion,
-                 col_rect = [None], col_puntos = [None], nombreImagen = None, escalaImagen = 1,
+                 col_rect = [None], col_puntos = [None], nombreImagen = None, escalaImagen = 1.0,
                  opacidad = 255, color = None, tooltip = None) -> None:
         # Variables que se obtienen por argumentos
         self.nombre = nombre
@@ -13,31 +13,37 @@ class Item:
         self.nombreImagen = nombreImagen
         
         alpha = 255 if Utils.DEBUG else 0
-        self.color = (127,255,0, alpha) if (color is None) else color#, 0) # Setea el color a verde en caso no exista ningun color
+        self.color = (127,255,0, alpha) if (color is None) else color #, 0) # Setea el color a verde en caso no exista ningun color
+
+
+        # Creacion de la superficie que cubre todo el escenario y servira para ubicar los nuevos items
+        self.superficie_type = ""
+        self.superficie = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO), pygame.SRCALPHA) #se genera de forma transparente
 
         self.rect = None
+        # Si es que se ha dado la info para un rect
         if col_rect[0] is not None:
             self.rect = pygame.Rect((col_rect[0], col_rect[1]), (col_rect[2], col_rect[3]))
+            
+            # Se guarda ls superficie como un rectangulo
+            pygame.draw.rect(self.superficie, color=self.color, rect=col_rect)
+            self.superficie_type = "rect"
 
+        # Si es que se ha dado la info para un polygono
+        if col_puntos[0] is not None:
+            # Se guarda ls superficie como un poligono
+            pygame.draw.polygon(self.superficie, color=self.color, points=col_puntos)
+            self.superficie_type = "polygon"
+            # se guarda los puntos en un objeto
+            self.poligono = [x for x in col_puntos]
+
+        # Se guarda la informacion del tooltip que se da (se asigna por defecto el nombre del propio item)
         self.tooltip = nombre if (tooltip is None) else tooltip
 
         # Variables necesarias para el funcionamiento
         self.visible = True;
         self.enable = True;
         self.clicked = False;
-
-        self.superficie_type = ""
-        self.superficie = pygame.surface.Surface((Utils.ANCHO, Utils.ALTO), pygame.SRCALPHA)
-
-        # Si es que se ha dado la info para un rect
-        if col_rect[0] is not None:
-            pygame.draw.rect(self.superficie, color=self.color, rect=col_rect)
-            self.superficie_type = "rect"
-
-        # Si es que se ha dado la info para un polygono
-        if col_puntos[0] is not None:
-            pygame.draw.polygon(self.superficie, color=self.color, points=col_puntos)
-            self.superficie_type = "polygon"
 
         # Si es que se ha dado la info de una imagen
         if nombreImagen is not None:
@@ -57,6 +63,7 @@ class Item:
             # Si existe, entonces que retorne el calculo prefedinido por Pygame
             return self.rect.collidepoint(point)
         
+        print("Hola estoy en el error")
         # Sino, que continue el calculo complicado
         num_vertices = len(self.poligono)
         x, y = point[0], point[1]

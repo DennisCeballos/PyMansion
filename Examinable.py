@@ -12,22 +12,20 @@ class Tipo_Examinable(Enum):
 
 #! Pueden existir (por ahora) solo tipos "Imagen", "Nota", "Puzzle"
 class Examinable:
-    def __init__(self, nombre, tipo: Tipo_Examinable, imagen = "error404.png", escalaImagen = 1,texto = "No haz asignado ningun texto",
+    def __init__(self, nombre, tipo: Tipo_Examinable, imagen = "error404.png", escalaImagen = 1.0, texto = "No haz asignado ningun texto",
                  accion_puzzle = None, puzzleAns = "None"):
         self.nombre = nombre
         self.tipo = tipo
-        self.imagen = imagen
-        self.texto = texto
         self.activo = True
         self.btn_regresar = Item("Regresar ...", col_rect= [Utils.ANCHO/2-200, Utils.ALTO-50, 400, 100], accion = self.cambiar_Activo, color=(40, 40, 40))
         
         if tipo == Tipo_Examinable.Imagen:
             # Logica para renderizar la imagen
-            self.imagen = Utils.get_imagen_cache(self.imagen)
-            self.imagen = pygame.transform.scale(self.imagen, (self.imagen.get_width() * escalaImagen, self.imagen.get_height()*escalaImagen))
+            self.surface_imagen = Utils.get_imagen_cache(imagen)
+            self.surface_imagen = pygame.transform.scale(self.surface_imagen, (self.surface_imagen.get_width() * escalaImagen, self.surface_imagen.get_height()*escalaImagen))
         
         elif tipo == Tipo_Examinable.Nota:
-            self.texto = Utils.tooltip_Font.render(texto, False, (0,0,0))
+            self.surface_texto = Utils.tooltip_Font.render(texto, False, (250,250,250))
         
         elif tipo == Tipo_Examinable.Puzzle:
             # Generar la entrada de texto
@@ -76,12 +74,12 @@ class Examinable:
         
 
         if self.tipo == Tipo_Examinable.Nota:
-            text_rect = self.texto.get_rect(center=(Utils.ANCHO/2, 100))
-            Utils.screen.blit(self.texto, text_rect)
+            text_rect = self.surface_texto.get_rect( center=(Utils.ANCHO/2, 100) )
+            Utils.screen.blit( self.surface_texto, text_rect )
 
 
         if self.tipo == Tipo_Examinable.Imagen:
-            Utils.screen.blit(self.imagen, (Utils.ANCHO/2 - self.imagen.get_size()[0]/2, Utils.ALTO/2 - self.imagen.get_size()[1]/2))
+            Utils.screen.blit(self.surface_imagen, (Utils.ANCHO/2 - self.surface_imagen.get_size()[0]/2, Utils.ALTO/2 - self.surface_imagen.get_size()[1]/2))
             pass
 
         if self.tipo == Tipo_Examinable.Puzzle:
