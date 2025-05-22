@@ -9,7 +9,7 @@ from Light_Sources import *
 from TextManager import TextoManager
 from InventarioManager import InventarioManager
 
-# Inicializar juego
+# Inicializar juego (aunque ya es inicializado en el archivo Utils)
 pygame.init()
 
 timer = pygame.time.Clock()

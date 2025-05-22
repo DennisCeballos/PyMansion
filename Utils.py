@@ -9,6 +9,8 @@ ALTO = 810
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+pygame.init()
+
 # Definicion de ciertos tipos de font por defecto
 font          = pygame.font.Font(None, 36)
 tooltip_Font  = pygame.font.Font(None, 26)
