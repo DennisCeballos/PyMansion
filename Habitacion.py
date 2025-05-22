@@ -5,7 +5,7 @@ from Light_Sources import LightSource
 
 # Clase para manejar los cuartos
 class Habitacion:
-    def __init__(self, nombre, imagen = None, items: Item = [], escalaImagen = 1, lista_luces = []) -> None:
+    def __init__(self, nombre, imagen = None, items = [], escalaImagen = 1.0, lista_luces = []) -> None:
         self.nombre = nombre;
         if (imagen is not None):
             self.imagen = Utils.get_imagen_cache(nombre_imagen=imagen)

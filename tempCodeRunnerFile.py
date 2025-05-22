@@ -1,1 +1,1 @@
-light_manager
+InventarioManager

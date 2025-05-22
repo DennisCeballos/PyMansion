@@ -77,12 +77,6 @@ def Accion_Examinar(x):
 
     if Utils.DEBUG: print("Examinando:" + str(x))
     
-    # Generar un item examinable de error
-    item_examinar = Examinable("Error",
-                    tipo="Nota",
-                    texto="Estas mirando un error, no se encontro el nombre del item examinable"
-                    ),
-    
     for i in items_examinables:
         if i.nombre == str(x):
             item_examinar = i
@@ -191,7 +185,7 @@ Flecha_BodegaAbajo = Item("Bodega Base",
     )
 
 CajaFuerte = Item("Caja de seguridad",
-    accion= lambda x="Caja seguridad": Accion_Examinar(x),
+    accion= lambda x="Aass": Accion_Examinar(x),
     col_rect=[580, 600, 112, 78],
     nombreImagen = "Caja_seguridad.png",
     escalaImagen = 0.75,
@@ -292,7 +286,11 @@ fade_counter = 0
 
 
 inspeccionando = False
-item_examinar = False # debe cambiarse a un item
+# Generar un item examinable de error
+item_examinar = Examinable("Error",
+                tipo = Tipo_Examinable.Nota,
+                texto = "Estas mirando un error, no se encontro el nombre del item examinable"
+                )
 
 hablando = False
 
